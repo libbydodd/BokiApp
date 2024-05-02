@@ -1,0 +1,1 @@
+SELECT * FROM menu_database.item_ingredients;
