@@ -1,9 +1,9 @@
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
-from kivy.properties import ListProperty
 from kivy.uix.togglebutton import ToggleButton
+from kivy.app import App
+import mysql.connector
 
-# Define the Kivy layout for your screen
 kv = """
 <PreferencesScreen>:
     BoxLayout:
@@ -12,7 +12,7 @@ kv = """
         padding: '50dp', '50dp', '50dp', '50dp'
 
         Label:
-            text: "Dietary Preferences"
+            text: "Preferences"
             font_size: '24sp'
             size_hint_y: None
             height: '48dp'
@@ -31,30 +31,48 @@ kv = """
             on_press: root.save_preferences()
 """
 
-# Load the Kivy string first to ensure all IDs are available.
 Builder.load_string(kv)
 
 class PreferencesScreen(Screen):
-    selected_preferences = ListProperty()
-
     def on_pre_enter(self):
-        # Clear existing buttons
         self.ids.preferences_grid.clear_widgets()
-        # Add new buttons based on preferences options
-        for option in ['Breakfast', 'Lunch', 'Dinner', 'Drinks']:
+        for option in ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Drinks']:
             btn = ToggleButton(text=option, size_hint_y=None, height=40)
             self.ids.preferences_grid.add_widget(btn)
 
-    def save_preferences(self):
-        # Gather all selected dietary preferences
-        self.selected_preferences = [btn.text for btn in self.ids.preferences_grid.children if btn.state == 'down']
-        print("Selected dietary preferences:", self.selected_preferences)
-        # This assumes that there's navigation logic to handle screen transitions
-        self.manager.current = 'home'
+    def create_connection(self):
+        return mysql.connector.connect(
+            host='localhost',
+            user='root',
+            password='Harryfreddie99!',  # Replace with your actual password
+            database='menu_database'
+        )
 
-# Below is only necessary if this script is run as a standalone file
+    def save_preferences(self):
+        selected_preferences = [btn.text for btn in self.ids.preferences_grid.children if btn.state == 'down']
+        print("Selected preferences:", selected_preferences)
+        user_id = App.get_running_app().current_user_id
+        if user_id:
+            conn = self.create_connection()
+            cursor = conn.cursor()
+            try:
+                cursor.execute("DELETE FROM user_preferences WHERE user_id = %s", (user_id,))
+                for preference in selected_preferences:
+                    cursor.execute("SELECT preference_id FROM preferences WHERE preference = %s", (preference,))
+                    preference_id = cursor.fetchone()
+                    if preference_id:
+                        cursor.execute("INSERT INTO user_preferences (user_id, preference_id) VALUES (%s, %s)", (user_id, preference_id[0]))
+                    else:
+                        print(f"No ID found for preference: {preference}")
+                conn.commit()
+            except mysql.connector.Error as e:
+                print(f"Database error: {e}")
+            finally:
+                cursor.close()
+                conn.close()
+                self.manager.current = 'home'
+
 if __name__ == '__main__':
-    from kivy.app import App
     class TestApp(App):
         def build(self):
             return PreferencesScreen()

@@ -1,6 +1,9 @@
 # register_screen.py
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
+from kivy.app import App
+import mysql.connector
+import hashlib
 
 kv = """
 <RegisterScreen>:
@@ -81,7 +84,64 @@ Builder.load_string(kv)
 
 class RegisterScreen(Screen):
     def create_account(self):
-        # Here you would add logic for creating an account, e.g., checking passwords,
-        # saving user data, handling errors, etc.
-        # For now, it simply switches to the dietary requirements screen
-        self.manager.current = 'dietary_requirements_screen'
+        first_name = self.ids.first_name.text
+        last_name = self.ids.last_name.text
+        email = self.ids.email.text
+        password = self.ids.password.text
+        confirm_password = self.ids.confirm_password.text
+        
+        if password != confirm_password:
+            print("Passwords do not match")
+            return
+        
+        username = self.generate_unique_username(first_name, last_name)
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        
+        user_id = self.register_user(username, hashed_password, email)
+        if user_id:
+            print(f"Account created successfully. Username: {username}")
+            App.get_running_app().set_current_user(user_id)
+            self.manager.current = 'dietary_requirements_screen'
+        else:
+            print("Failed to create account. Please try again.")
+
+    def generate_unique_username(self, first_name, last_name):
+        base_username = f"{first_name.lower()}{last_name.lower()}"
+        unique_username = base_username
+        num_suffix = 1
+        connection = mysql.connector.connect(host='localhost', user='root', password='Harryfreddie99!', database='menu_database')
+        cursor = connection.cursor()
+        while True:
+            cursor.execute("SELECT EXISTS(SELECT 1 FROM users WHERE username = %s)", (unique_username,))
+            if cursor.fetchone()[0]:
+                unique_username = f"{base_username}{num_suffix}"
+                num_suffix += 1
+            else:
+                break
+        cursor.close()
+        connection.close()
+        return unique_username
+
+    def register_user(self, username, password, email):
+        connection = mysql.connector.connect(host='localhost', user='root', password='Harryfreddie99!', database='menu_database')
+        cursor = connection.cursor()
+        try:
+            cursor.execute("INSERT INTO users (username, password, email) VALUES (%s, %s, %s)", (username, password, email))
+            connection.commit()
+            cursor.execute("SELECT LAST_INSERT_ID()")
+            user_id = cursor.fetchone()[0]
+            return user_id
+        except mysql.connector.Error as error:
+            print(f"Failed to insert record: {error}")
+            return None
+        finally:
+            cursor.close()
+            connection.close()
+
+if __name__ == '__main__':
+    from kivy.app import App
+    class TestApp(App):
+        def build(self):
+            return RegisterScreen()
+
+    TestApp().run()

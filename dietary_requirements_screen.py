@@ -2,8 +2,9 @@ from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
 from kivy.properties import DictProperty
 from kivy.uix.togglebutton import ToggleButton
+from kivy.app import App
+import mysql.connector
 
-# Add your options for the dietary requirements
 DIETARY_OPTIONS = [
     'Vegan', 'Vegetarian', 'Pescatarian', 'Fish Allergy',
     'Lactose Intolerant', 'Gluten Free', 'Oat Milk', 'Coconut Milk',
@@ -45,15 +46,14 @@ Builder.load_string("""
 """)
 
 class DietaryRequirementsScreen(Screen):
-    # Using a dictionary to keep track of button states
     requirements_state = DictProperty({option: False for option in DIETARY_OPTIONS})
 
     def on_pre_enter(self):
-        self.ids.dietary_grid.clear_widgets()  # Clear existing buttons
+        self.ids.dietary_grid.clear_widgets()
         for option in DIETARY_OPTIONS:
             btn = ToggleButton(
-                text=option, 
-                size_hint_y=None, 
+                text=option,
+                size_hint_y=None,
                 height=40,
                 state='down' if self.requirements_state[option] else 'normal'
             )
@@ -61,14 +61,43 @@ class DietaryRequirementsScreen(Screen):
             self.ids.dietary_grid.add_widget(btn)
 
     def toggle_requirement(self, instance):
-        # Toggle the state in the dictionary when the button is pressed
         self.requirements_state[instance.text] = (instance.state == 'down')
 
+    def create_connection(self):
+        return mysql.connector.connect(
+            host='localhost',
+            user='root',
+            password='Harryfreddie99!',  # Ensure password is correctly configured
+            database='menu_database'
+        )
+
     def save_requirements(self):
-        # Gather all selected dietary requirements based on stored states
         selected_requirements = [req for req, selected in self.requirements_state.items() if selected]
-        print("Selected dietary requirements:", selected_requirements)
-        # Navigate to the next screen or save the preferences
+        user_id = App.get_running_app().current_user_id
+        if not user_id:
+            print("User not logged in.")
+            return
+
+        connection = self.create_connection()
+        cursor = connection.cursor()
+        try:
+            cursor.execute("DELETE FROM user_requirements WHERE user_id = %s", (user_id,))
+            for requirement in selected_requirements:
+                cursor.execute("SELECT label_id FROM dietary_labels WHERE label_name = %s", (requirement,))
+                label_id = cursor.fetchone()
+                if label_id:
+                    cursor.execute("INSERT INTO user_requirements (user_id, label_id) VALUES (%s, %s)", (user_id, label_id[0]))
+                else:
+                    print(f"No label found for requirement: {requirement}")
+
+            connection.commit()
+            print("Selected dietary requirements updated successfully:", selected_requirements)
+        except mysql.connector.Error as e:
+            print(f"Failed to update dietary requirements: {e}")
+        finally:
+            cursor.close()
+            connection.close()
+
         self.manager.current = 'preferences_screen'
 
 if __name__ == '__main__':
