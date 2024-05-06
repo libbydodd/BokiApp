@@ -2,6 +2,7 @@ from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
 from kivy.properties import DictProperty
 from kivy.uix.togglebutton import ToggleButton
+from kivy.metrics import dp
 from kivy.app import App
 import mysql.connector
 
@@ -16,7 +17,7 @@ Builder.load_string("""
     BoxLayout:
         orientation: 'vertical'
         spacing: '15dp'
-        padding: '50dp', '50dp', '50dp', '50dp'
+        padding: '30dp', '20dp', '30dp', '20dp'
 
         Image:
             source: 'logo.png'
@@ -37,11 +38,14 @@ Builder.load_string("""
             spacing: '15dp'
             size_hint_y: None
             height: self.minimum_height
+            size_hint_x: 0.9
+            pos_hint: {'center_x': 0.5}
 
         Button:
             text: "Save Requirements"
             size_hint_y: None
             height: '48dp'
+            background_color: 1, 0, 0, 1
             on_press: root.save_requirements()
 """)
 
@@ -50,15 +54,28 @@ class DietaryRequirementsScreen(Screen):
 
     def on_pre_enter(self):
         self.ids.dietary_grid.clear_widgets()
+        button_width = dp(100)  # Set a fixed width for all buttons
         for option in DIETARY_OPTIONS:
             btn = ToggleButton(
                 text=option,
                 size_hint_y=None,
-                height=40,
+                width=button_width,  # Apply fixed width
+                size_hint_x=0.9,  # Disable horizontal size hint
+                height=dp(60),
                 state='down' if self.requirements_state[option] else 'normal'
             )
+            # Set text size to the button's width and unlimited height to allow for wrapping
+            btn.text_size = (btn.width, None)
+            # Align the text to the center
+            btn.halign = 'center'
+            btn.valign = 'middle'
+            btn.bind(size=self.adjust_text_size, texture_size=self.adjust_text_size)
             btn.bind(on_release=self.toggle_requirement)
             self.ids.dietary_grid.add_widget(btn)
+
+    def adjust_text_size(self, instance, value):
+        # Adjust the text_size whenever the button size changes
+        instance.text_size = (instance.width, None)
 
     def toggle_requirement(self, instance):
         self.requirements_state[instance.text] = (instance.state == 'down')

@@ -96,69 +96,79 @@ class Home(Screen):
 
     def fetch_menu_items(self):
         connection = self.create_connection()
-        try:
-            cursor = connection.cursor(dictionary=True)
-            cursor.execute("SELECT id, item_name, description, price FROM menu_items")
-            return cursor.fetchall()
-        finally:
-            cursor.close()
-            connection.close()
+        cursor = connection.cursor(dictionary=True)
+        query = """
+        SELECT mi.id, mi.item_name, mi.description, mi.price,
+            GROUP_CONCAT(DISTINCT d.label_name SEPARATOR ', ') AS dietary_labels,
+            GROUP_CONCAT(DISTINCT ing.ingredient SEPARATOR ', ') AS ingredients
+        FROM menu_items mi
+        LEFT JOIN menu_item_labels mil ON mi.id = mil.id  
+        LEFT JOIN dietary_labels d ON mil.label_id = d.label_id
+        LEFT JOIN menu_item_ingredients mii ON mi.id = mii.id  
+        LEFT JOIN ingredients ing ON mii.ingredient_id = ing.ingredient_id
+        GROUP BY mi.id
+        """
+        cursor.execute(query)
+        items = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return items
+
 
     def fetch_user_preferences(self, user_id):
         connection = self.create_connection()
-        try:
-            cursor = connection.cursor(dictionary=True)
-            cursor.execute("""
-                SELECT p.preference
-                FROM user_preferences up
-                JOIN preferences p ON up.preference_id = p.preference_id
-                WHERE up.user_id = %s
-            """, (user_id,))
-            preferences = cursor.fetchall()
-            return ' '.join([pref['preference'] for pref in preferences])
-        finally:
-            cursor.close()
-            connection.close()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT p.preference
+            FROM user_preferences up
+            JOIN preferences p ON up.preference_id = p.preference_id
+            WHERE up.user_id = %s
+        """, (user_id,))
+        preferences = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return ' '.join([pref['preference'] for pref in preferences])
 
     def fetch_user_requirements(self, user_id):
         connection = self.create_connection()
-        try:
-            cursor = connection.cursor(dictionary=True)
-            cursor.execute("""
-                SELECT dl.label_name
-                FROM user_requirements ur
-                JOIN dietary_labels dl ON ur.label_id = dl.label_id
-                WHERE ur.user_id = %s
-            """, (user_id,))
-            results = cursor.fetchall()
-            return ' '.join([result['label_name'] for result in results])
-        finally:
-            cursor.close()
-            connection.close()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT dl.label_name
+            FROM user_requirements ur
+            JOIN dietary_labels dl ON ur.label_id = dl.label_id
+            WHERE ur.user_id = %s
+        """, (user_id,))
+        requirements = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        return ' '.join([req['label_name'] for req in requirements])
 
     def recommend_items(self, user_id):
         items = self.fetch_menu_items()
-        if not items:
-            print("No items fetched from the database.")
+        user_preferences = self.fetch_user_preferences(user_id)
+        user_requirements = self.fetch_user_requirements(user_id)
+
+        # Combine user data for vectorization
+        user_data = ' '.join(user_preferences + user_requirements)
+
+        # Filter items by user preferences and requirements
+        filtered_items = [item for item in items if all(req in item['description'] or req in item['dietary_labels'] or req in item['ingredients'] for req in user_requirements)]
+
+        # Only proceed if there are items after filtering
+        if not filtered_items:
+            print("No items match the user's dietary requirements.")
             return []
 
-        # Fetch and combine user preferences and requirements
-        user_data = self.fetch_user_preferences(user_id) + ' ' + self.fetch_user_requirements(user_id)
-        print("User Preferences and Requirements:", user_data)  # Debugging user data
-
-        # Fetch and prepare menu item descriptions
-        descriptions = [item['description'] for item in items]
-        print("Menu Item Descriptions:", descriptions)  # Debugging menu item descriptions
-
-        # Vectorization and cosine similarity calculation
-        vectorizer = TfidfVectorizer()
+        descriptions = [item['description'] + ' ' + item['dietary_labels'] + ' ' + item['ingredients'] for item in filtered_items]
+        vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(1, 2))
         tfidf_matrix = vectorizer.fit_transform(descriptions)
         user_vector = vectorizer.transform([user_data])
         cosine_sim = cosine_similarity(user_vector, tfidf_matrix)
 
-        # Identifying top recommendations
         top_indices = cosine_sim[0].argsort()[-4:][::-1]
-        return [items[i] for i in top_indices]
+        recommended_items = [filtered_items[i] for i in top_indices]
+
+        return recommended_items
 
     def display_recommendations(self, recommended_items):
         self.ids.grid.clear_widgets()

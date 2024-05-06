@@ -11,6 +11,13 @@ kv = """
         spacing: '15dp'
         padding: '50dp', '50dp', '50dp', '50dp'
 
+        Image:
+            source: 'logo.png'
+            size_hint_y: None
+            height: dp(60)
+            keep_ratio: True
+            allow_stretch: True
+
         Label:
             text: "Preferences"
             font_size: '24sp'
@@ -28,6 +35,7 @@ kv = """
             text: "Save Preferences"
             size_hint_y: None
             height: '48dp'
+            background_color: 1, 0, 0, 1
             on_press: root.save_preferences()
 """
 

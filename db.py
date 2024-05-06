@@ -26,7 +26,7 @@ def fetch_menu_items():
     """Fetch all menu items from the database."""
     connection = create_connection()
     if connection is not None:
-        cursor = connection.cursor()
+        cursor = connection.cursor(dictionary=True) 
         cursor.execute("SELECT * FROM menu_items")
         records = cursor.fetchall()
         cursor.close()
@@ -35,7 +35,7 @@ def fetch_menu_items():
     else:
         return []
 
-# Example usage
 if __name__ == "__main__":
     items = fetch_menu_items()
-    print(items)
+    for item in items:
+        print(item)

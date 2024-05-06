@@ -1,3 +1,7 @@
+from kivy.config import Config
+Config.set('graphics', 'width', '390')  # iPhone 13 width in pixels
+Config.set('graphics', 'height', '844')  # iPhone 13 height in pixels
+Config.write()
 # main.py
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
@@ -10,6 +14,7 @@ from menu_touchpoints import MenuTouchpoints
 from collection_time import CollectionTime
 from boki_menu import BokiMenu 
 from basket import Basket
+from checkout_screen import CheckoutScreen
 
 class MyApp(App):
     current_user_id = None  # Track the current user's ID
@@ -29,13 +34,14 @@ class MyApp(App):
         self.sm.add_widget(CollectionTime(name='collection_time'))
         self.sm.add_widget(BokiMenu(name='boki_menu'))
         self.sm.add_widget(Basket(name='basket'))
+        self.sm.add_widget(CheckoutScreen(name='checkout_screen'))
         self.sm.current = 'login_screen'
         return self.sm
 
     def add_item_to_basket(self, item):
         """Method to add an item to the basket."""
         self.basket.append(item)
-        print(f"Added {item['name']} to basket")
+        print(f"Added {item['item_name']} to basket")
 
     def set_current_user(self, user_id):
         """ Set the current logged-in user ID """

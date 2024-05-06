@@ -119,8 +119,8 @@ class BokiMenu(Screen):
     def populate_menu_items(self):
         menu_items = fetch_menu_items()
         for item in menu_items:
-            category = item[4].lower()  # Adjust the indexing based on your data structure
-            button = Button(text=f"{item[1]} £{float(item[3]):.2f}", size_hint_y=None, height=dp(40))
+            category = item['category'].lower()  # Adjusted to use dictionary access
+            button = Button(text=f"{item['item_name']} £{float(item['price']):.2f}", size_hint_y=None, height=dp(40))
             button.bind(on_release=lambda btn, item=item: self.show_item_popup(item))
             getattr(self.ids, f"{category}_box").add_widget(button)
 
@@ -136,12 +136,17 @@ class BokiMenu(Screen):
 
     def show_item_popup(self, item):
         popup_content = BoxLayout(orientation='vertical', padding=10, spacing=10)
-        name_label = Label(text=f"Name: {item[1]}", size_hint_y=None, height=dp(40))
-        description_label = Label(text=f"Description: {item[2]}", size_hint_y=None, text_size=(280, None), halign='left', valign='top')
-        price_label = Label(text=f"Price: £{item[3]:.2f}", size_hint_y=None, height=dp(40))
+        name_label = Label(text=f"Name: {item['item_name']}", size_hint_y=None, height=dp(40))
+        description_label = Label(text=f"Description: {item['description']}", size_hint_y=None, text_size=(280, None), halign='left', valign='top')
+        price_label = Label(text=f"Price: £{item['price']:.2f}", size_hint_y=None, height=dp(40))
 
         # Add to Basket Button
-        add_to_basket_button = Button(text="Add to Basket", size_hint_y=None, height=dp(40))
+        add_to_basket_button = Button(
+            text="Add to Basket", 
+            size_hint_y=None, 
+            height=dp(40),
+            background_color=(1, 0, 0, 1)
+        )
         add_to_basket_button.bind(on_press=lambda x: self.add_item_to_basket(item))
 
         popup_content.add_widget(name_label)

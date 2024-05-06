@@ -125,25 +125,32 @@ kv = """
 
 Builder.load_string(kv)
 
+from kivy.uix.togglebutton import ToggleButton
+
 class CollectionTime(Screen):
     def toggle_times(self, period, state):
         box_id = period.lower() + '_box'
         box = self.ids[box_id]
         if state == 'down':
-            # Show the times
             box.height = dp(200)  # Adjust this based on the number of buttons
             box.opacity = 1
         else:
-            # Hide the times
             box.height = 0
             box.opacity = 0
+
         # Ensure all other boxes are closed
         for other_period, other_box_id in {'morning': 'morning_box', 'afternoon': 'afternoon_box', 'evening': 'evening_box'}.items():
             if other_period != period:
                 other_box = self.ids[other_box_id]
                 other_box.height = 0
                 other_box.opacity = 0
+            elif state == 'down':
+                # Only select active buttons from the current visible box
+                active_buttons = [btn for btn in self.ids[box_id].children if isinstance(btn, ToggleButton) and btn.state == 'down']
+                if active_buttons:
+                    self.set_collection_time(active_buttons[0].text)
 
+            
 class CollectionApp(App):
     def build(self):
         return CollectionTime()
