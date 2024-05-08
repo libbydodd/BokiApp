@@ -1,3 +1,4 @@
+#boki_menu.py
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
 from kivy.uix.boxlayout import BoxLayout
@@ -119,7 +120,7 @@ class BokiMenu(Screen):
     def populate_menu_items(self):
         menu_items = fetch_menu_items()
         for item in menu_items:
-            category = item['category'].lower()  # Adjusted to use dictionary access
+            category = item['category'].lower()  # Uses dictionary access
             button = Button(text=f"{item['item_name']} £{float(item['price']):.2f}", size_hint_y=None, height=dp(40))
             button.bind(on_release=lambda btn, item=item: self.show_item_popup(item))
             getattr(self.ids, f"{category}_box").add_widget(button)
@@ -152,9 +153,9 @@ class BokiMenu(Screen):
         popup_content.add_widget(name_label)
         popup_content.add_widget(description_label)
         popup_content.add_widget(price_label)
-        popup_content.add_widget(add_to_basket_button)  # Adding the button to the popup
+        popup_content.add_widget(add_to_basket_button)  # Adds the button to the popup
 
-        # Adjusted popup height for more content space
+        # Adjusts popup height
         popup = Popup(title='Item Details', content=popup_content, size_hint=(None, None), size=(350, 400))
         popup.open()
 

@@ -1,3 +1,4 @@
+#checkout_screen.py
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -7,7 +8,6 @@ from decimal import Decimal
 from datetime import datetime
 import mysql.connector
 
-# Define the Kivy layout using the Builder
 KV = """
 <CheckoutScreen>:
     BoxLayout:
@@ -86,7 +86,7 @@ class CheckoutScreen(Screen):
         try:
             connection = self.create_connection()
             cursor = connection.cursor()
-            user_id = App.get_running_app().current_user_id  # Assuming there's a user ID to track who is making the purchase
+            user_id = App.get_running_app().current_user_id 
             total = sum(Decimal(item['price']) for item in basket_items)
             order_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 

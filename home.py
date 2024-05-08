@@ -1,3 +1,4 @@
+#home.py
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
@@ -16,7 +17,7 @@ Builder.load_string("""
         padding: 10
         canvas.before:
             Color:
-                rgba: 0, 0, 0, 1  # Black background
+                rgba: 0, 0, 0, 1
             Rectangle:
                 pos: self.pos
                 size: self.size

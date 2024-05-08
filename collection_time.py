@@ -1,3 +1,4 @@
+#collection_time.py
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
 from kivy.uix.boxlayout import BoxLayout
@@ -8,7 +9,6 @@ from kivy.uix.image import Image
 from kivy.app import App
 from kivy.metrics import dp
 
-# Assuming logo.png is in the same directory as the script.
 logo_path = 'logo.png'
 
 kv = """
@@ -132,7 +132,7 @@ class CollectionTime(Screen):
         box_id = period.lower() + '_box'
         box = self.ids[box_id]
         if state == 'down':
-            box.height = dp(200)  # Adjust this based on the number of buttons
+            box.height = dp(200) 
             box.opacity = 1
         else:
             box.height = 0

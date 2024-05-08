@@ -1,3 +1,4 @@
+#preferences_screen.py
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
 from kivy.uix.togglebutton import ToggleButton
@@ -52,7 +53,7 @@ class PreferencesScreen(Screen):
         return mysql.connector.connect(
             host='localhost',
             user='root',
-            password='Harryfreddie99!',  # Replace with your actual password
+            password='Harryfreddie99!', 
             database='menu_database'
         )
 
