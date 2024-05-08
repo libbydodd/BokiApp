@@ -5,6 +5,7 @@ from kivy.app import App  # Import the App class which is the base for creating 
 from kivy.uix.label import Label  # Import the Label class to use it for displaying text
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
+from kivy.core.window import Window
 
 Builder.load_string("""
 <Basket>:

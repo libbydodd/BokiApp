@@ -8,6 +8,7 @@ from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.metrics import dp
 from kivy.app import App
+from kivy.core.window import Window
 
 # Importing the function to fetch menu items from the database
 from db import fetch_menu_items

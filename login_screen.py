@@ -1,8 +1,10 @@
 # login_screen.py
+from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
 import mysql.connector
 import hashlib
+from kivy.core.window import Window
 
 Builder.load_string("""
 <LoginScreen>:

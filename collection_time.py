@@ -8,6 +8,7 @@ from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.app import App
 from kivy.metrics import dp
+from kivy.core.window import Window
 
 logo_path = 'logo.png'
 

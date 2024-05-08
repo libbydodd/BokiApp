@@ -7,6 +7,7 @@ from kivy.uix.button import Button
 from decimal import Decimal
 from datetime import datetime
 import mysql.connector
+from kivy.core.window import Window
 
 KV = """
 <CheckoutScreen>:

@@ -8,6 +8,7 @@ from kivy.uix.gridlayout import GridLayout
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import mysql.connector
+from kivy.core.window import Window
 
 Builder.load_string("""
 <Home>:

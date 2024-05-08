@@ -1,9 +1,11 @@
-#preferences_screen.py
+# preferences_screen.py
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
 from kivy.uix.togglebutton import ToggleButton
 from kivy.app import App
+from db import create_connection
 import mysql.connector
+from kivy.metrics import dp
 
 kv = """
 <PreferencesScreen>:
@@ -46,23 +48,16 @@ class PreferencesScreen(Screen):
     def on_pre_enter(self):
         self.ids.preferences_grid.clear_widgets()
         for option in ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Drinks']:
-            btn = ToggleButton(text=option, size_hint_y=None, height=40)
+            btn = ToggleButton(text=option, size_hint_y=None, height=dp(40))
             self.ids.preferences_grid.add_widget(btn)
-
-    def create_connection(self):
-        return mysql.connector.connect(
-            host='localhost',
-            user='root',
-            password='Harryfreddie99!', 
-            database='menu_database'
-        )
 
     def save_preferences(self):
         selected_preferences = [btn.text for btn in self.ids.preferences_grid.children if btn.state == 'down']
         print("Selected preferences:", selected_preferences)
         user_id = App.get_running_app().current_user_id
+        print(f"Current User ID: {user_id}")
         if user_id:
-            conn = self.create_connection()
+            conn = create_connection()
             cursor = conn.cursor()
             try:
                 cursor.execute("DELETE FROM user_preferences WHERE user_id = %s", (user_id,))
@@ -74,6 +69,7 @@ class PreferencesScreen(Screen):
                     else:
                         print(f"No ID found for preference: {preference}")
                 conn.commit()
+                print("Preferences saved successfully")
             except mysql.connector.Error as e:
                 print(f"Database error: {e}")
             finally:

@@ -1,4 +1,3 @@
-#menu_touchpoints.py
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
 from kivy.uix.behaviors import ButtonBehavior
@@ -9,6 +8,7 @@ from kivy.core.window import Window
 from kivy.metrics import dp
 
 Builder.load_string("""
+#:import Window kivy.core.window.Window
 
 <TouchpointButton@ButtonBehavior+FloatLayout>:
     source: ''
@@ -28,7 +28,7 @@ Builder.load_string("""
         pos_hint: {'center_x': 0.5, 'center_y': 0.5}
         canvas.before:
             Color:
-                rgba: (0, 0, 0, 0.5)  # Tint color and opacity
+                rgba: (0, 0, 0, 0.5)  # Ensure the tint color and opacity are correct
             Rectangle:
                 pos: self.pos
                 size: self.size
@@ -86,7 +86,7 @@ Builder.load_string("""
                     text: 'El Toro'
                     on_release: root.manager.current = 'collection_time'
 
-        # Sticky menu
+        # Sticky menu at the bottom
         BoxLayout:
             size_hint_y: None
             height: dp(50)

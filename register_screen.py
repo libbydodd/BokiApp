@@ -4,6 +4,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.app import App
 import mysql.connector
 import hashlib
+from kivy.core.window import Window
 
 kv = """
 <RegisterScreen>:

@@ -6,6 +6,8 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.metrics import dp
 from kivy.app import App
 import mysql.connector
+from kivy.core.window import Window
+
 
 DIETARY_OPTIONS = [
     'Vegan', 'Vegetarian', 'Pescatarian', 'Fish Allergy',
