@@ -170,7 +170,7 @@ class Home(Screen):
         # Combine user data for vectorization
         user_data = ' '.join(user_preferences) + ' ' + user_requirements
 
-        # Debug: Print user data
+        # Debug by printing user data
         print(f"User Data: {user_data}")
 
         # Filter items by user requirements
@@ -179,7 +179,7 @@ class Home(Screen):
             if all(req.lower() in (item['description'] + ' ' + item['dietary_labels'] + ' ' + item['ingredients']).lower() for req in user_requirements.split())
         ]
 
-        # Debug: Print filtered items
+        # Debug by printing filtered items
         print(f"Filtered items: {filtered_items}")
 
         # Only proceed if there are items after filtering
@@ -192,39 +192,39 @@ class Home(Screen):
             for item in filtered_items
         ]
 
-        # Debug: Print descriptions for vectorization
+        # Debug by printing descriptions for vectorization
         print(f"Descriptions: {descriptions}")
 
         vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(1, 2))
         tfidf_matrix = vectorizer.fit_transform(descriptions)
 
-        # Debug: Print tfidf_matrix shape
+        # Debug by printing tfidf_matrix shape
         print(f"TF-IDF Matrix shape: {tfidf_matrix.shape}")
 
         user_vector = vectorizer.transform([user_data])
 
-        # Debug: Print user vector shape
+        # Debug by printing user vector shape
         print(f"User Vector shape: {user_vector.shape}")
 
         cosine_sim = cosine_similarity(user_vector, tfidf_matrix)
 
-        # Debug: Print cosine similarity scores
+        # Debug by printing cosine similarity scores
         print(f"Cosine Similarity: {cosine_sim}")
 
-        # Weighting mechanism to prioritize preferences
+        # Weighting mechanism to prioritize the preferences
         preference_weights = [1.0 for _ in range(len(filtered_items))]
         for i, item in enumerate(filtered_items):
             item_data = item['description'] + ' ' + item['dietary_labels'] + ' ' + item['ingredients']
             for pref in user_preferences:
                 if pref.lower() in item_data.lower() or item['category'].lower() == pref.lower():
-                    preference_weights[i] *= 3.0  # Increase weight significantly for matching preferences
+                    preference_weights[i] *= 3.0  # Increase weight to match preferences with priority
 
         weighted_cosine_sim = cosine_sim[0] * preference_weights
 
         top_indices = weighted_cosine_sim.argsort()[-4:][::-1]
         recommended_items = [filtered_items[i] for i in top_indices]
 
-        # Debug: Print recommended items
+        # Debug by printing recommended items
         print(f"Recommended Items: {recommended_items}")
 
         return recommended_items
@@ -237,8 +237,8 @@ class Home(Screen):
             item_label = Label(
                 text=f"{item['item_name']} - £{item['price']}",
                 size_hint_y=None,
-                color=(1, 1, 1, 1),  # Black color for text
-                text_size=(self.width / 2 - 20, None),  # Adjust the text width to fit in the box
+                color=(1, 1, 1, 1),  
+                text_size=(self.width / 2 - 20, None),  
                 halign='center',
                 valign='middle'
             )
